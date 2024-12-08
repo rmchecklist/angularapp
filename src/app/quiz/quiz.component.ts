@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnInit } from '@angular/core';
+import { Component, inject, Input, OnInit, signal } from '@angular/core';
 import { STATES_AND_CAPITALS } from './quiz.model';
 import { MatCardModule } from '@angular/material/card';
 import {MatRadioModule} from '@angular/material/radio';
@@ -6,11 +6,12 @@ import { FormsModule } from '@angular/forms';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
 
 
 @Component({
   selector: 'app-quiz',
-  imports: [MatCardModule, MatRadioModule, FormsModule, MatToolbarModule, CommonModule ],
+  imports: [MatCardModule, MatButtonModule, MatRadioModule, FormsModule, MatToolbarModule, CommonModule ],
   templateUrl: './quiz.component.html',
   styleUrls: ['./quiz.component.scss'],
 })
@@ -18,6 +19,7 @@ export class QuizComponent implements OnInit {
   router = inject(Router);
   route = inject(ActivatedRoute);
 
+  disabledInputSelection = signal(false);
   numQuestions: number = 0;
   totalTime: number = 0;
 
@@ -29,6 +31,7 @@ export class QuizComponent implements OnInit {
   timeLeft: number = 0; // Total time left in seconds
   timer: any;
   startTime: number = 0;
+  feedback: { isCorrect: boolean; message: string } | null = null;
 
   get currentQuestion() {
     return this.selectedQuestions[this.currentIndex];
@@ -99,14 +102,32 @@ export class QuizComponent implements OnInit {
   }
 
   previousQuestion(): void {
+    this.disabledInputSelection.set(false);
     if (this.currentIndex > 0) {
       this.currentIndex--;
     }
   }
 
   nextQuestion(): void {
+    this.disabledInputSelection.set(false);
     if (this.currentIndex < this.numQuestions - 1) {
       this.currentIndex++;
+    }
+  }
+
+  checkAnswer(selectedOption: string | null): void {
+    this.disabledInputSelection.set(true);
+    if (selectedOption) {
+      const isCorrect = selectedOption === this.currentQuestion.capital;
+      this.answers[this.currentIndex] = selectedOption;
+
+      // Set feedback
+      this.feedback = {
+        isCorrect,
+        message: isCorrect
+          ? 'Correct! 🎉'
+          : `Wrong! You selected "${this.currentQuestion.capital}".`,
+      };
     }
   }
 

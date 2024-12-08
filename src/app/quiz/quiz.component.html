@@ -1,5 +1,6 @@
 <mat-toolbar color="primary">
   <span>U.S. States Quiz</span>
+  <span class="example-spacer"></span>
   <div class="timer">Time Left: {{ timerMinutes }}:{{ timerSeconds | number: '2.0' }}</div>
 </mat-toolbar>
 
@@ -7,10 +8,12 @@
   <mat-card *ngIf="currentQuestion">
     <mat-card-title>
       Question {{ currentIndex + 1 }} of {{ numQuestions }}: <br />
-      What is the capital of <strong>{{ currentQuestion.state }}</strong>?
+      <div>
+        What is the capital of <strong>{{ currentQuestion.state }}</strong>?
+      </div>
     </mat-card-title>
     <mat-card-content>
-      <mat-radio-group [(ngModel)]="answers[currentIndex]">
+      <mat-radio-group  [disabled]="disabledInputSelection()" [(ngModel)]="answers[currentIndex]" (change)="checkAnswer(answers[currentIndex])">
         <mat-radio-button *ngFor="let option of currentQuestion.options" [value]="option">
           {{ option }}
         </mat-radio-button>
@@ -20,10 +23,19 @@
       <button mat-raised-button color="accent" (click)="previousQuestion()" [disabled]="currentIndex === 0">
         Previous
       </button>
-      <button mat-raised-button color="primary" (click)="nextQuestion()">
+      <button mat-raised-button color="primary" (click)="nextQuestion()" [disabled]="(currentIndex+1) === numQuestions">
         Next
       </button>
     </mat-card-actions>
+    <mat-card-footer>
+      <!-- Feedback Section -->
+    <div *ngIf="feedback">
+      <p [ngClass]="{ correct: feedback.isCorrect, wrong: !feedback.isCorrect }">
+        {{ feedback.message }}
+      </p>
+      <p>The correct answer is: <strong>{{ currentQuestion.capital }}</strong></p>
+    </div>
+    </mat-card-footer>
   </mat-card>
 </div>
 

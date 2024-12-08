@@ -1,17 +1,19 @@
-<mat-card class="config-card">
-    <mat-card-title>Quiz Configuration</mat-card-title>
-    <mat-card-content>
-      <mat-form-field appearance="fill">
-        <mat-label>Number of Questions</mat-label>
-        <input matInput type="number" [(ngModel)]="numQuestions" />
-      </mat-form-field>
-  
-      <mat-form-field appearance="fill">
-        <mat-label>Total Time (minutes)</mat-label>
-        <input matInput type="number" [(ngModel)]="totalTime" />
-      </mat-form-field>
-  
-      <button mat-raised-button color="primary" (click)="startQuiz()" [disabled]="!isValidConfig()">Start Quiz</button>
-    </mat-card-content>
-  </mat-card>
+<div class="container">
+  <mat-card class="config-card">
+      <mat-card-title>Quiz Configuration</mat-card-title>
+      <mat-card-content>
+        <mat-form-field>
+          <mat-label>Number of Questions</mat-label>
+          <input matInput type="number" [(ngModel)]="numQuestions" />
+        </mat-form-field>
+    
+        <mat-form-field>
+          <mat-label>Total Time (minutes)</mat-label>
+          <input matInput type="number" [(ngModel)]="totalTime" />
+        </mat-form-field>
+    
+        <button mat-raised-button color="primary" (click)="startQuiz()" [disabled]="!isValidConfig()">Start Quiz</button>
+      </mat-card-content>
+    </mat-card>
+</div>
   
