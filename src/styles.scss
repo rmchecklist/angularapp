@@ -1,1 +1,39 @@
 /* You can add global styles to this file, and also import other style files */
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+/* Dark Theme */
+body.dark-theme {
+    background-color: #121212; /* Dark background */
+    color: #e0e0e0; /* Light text for contrast */
+  }
+  
+  body.dark-theme mat-card {
+    background-color: #1e1e1e; /* Darker card background */
+    color: #ffffff; /* White text for cards */
+    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1); /* Subtle glow effect */
+  }
+  
+  body.dark-theme mat-radio-button {
+    color: #ffffff; /* White text for radio buttons */
+  }
+  
+  body.dark-theme mat-toolbar {
+    background-color: #333333; /* Darker toolbar */
+    color: #ffffff; /* White toolbar text */
+  }
+  
+  body.dark-theme .timer-text {
+    color: #e0e0e0; /* Light timer text */
+  }
+  
+  body.dark-theme mat-progress-bar {
+    background-color: #424242; /* Dark progress bar background */
+  }
+  
+  body.dark-theme mat-progress-spinner circle {
+    stroke: #bb86fc; /* Purple color for spinner */
+  }
+  
