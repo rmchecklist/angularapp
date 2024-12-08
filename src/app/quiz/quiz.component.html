@@ -1,102 +1,32 @@
 <mat-toolbar color="primary">
-    <span>U.S. States Quiz</span>
-    <mat-slide-toggle (change)="toggleDarkMode()" style="margin-left: auto;">Dark Mode</mat-slide-toggle>
-  </mat-toolbar>
-  <!-- Progress Bar -->
-  <mat-progress-bar mode="determinate" [value]="progress()"></mat-progress-bar>
-  <!-- Timer Section -->
-   <div class="main-content">
-    <div class="question">
-      
-    
-      <!-- Quiz Section -->
-      <div class="quiz-container" *ngIf="question() as currentQuestion; else endScreen" @fadeInOut>
-        
-        <div class="question-title">
-          Question {{ quizService.currentQuestionIndex() + 1 }} of {{ totalQuestions }}
-        </div>
-        
-      
-        <mat-card>
-          <mat-card-title>
-            What is the capital of <strong>{{ currentQuestion.state }}</strong>?
-          </mat-card-title>
-          <mat-card-content>
-            <mat-radio-group [(ngModel)]="selectedOption" (change)="confirmAnswer()">
-              <mat-radio-button
-                *ngFor="let option of currentQuestion.options"
-                [value]="option"
-                class="quiz-option"
-              >
-                {{ option }}
-              </mat-radio-button>
-            </mat-radio-group>
-          </mat-card-content>
-          <mat-card-actions class="action-buttons">
-            <button
-              mat-raised-button
-              color="primary"
-              [disabled]="quizService.currentQuestionIndex() === 0"
-            >
-              Previous
-            </button>
-            <button mat-raised-button color="accent" [disabled]="quizService.currentQuestionIndex() === totalQuestions" (click)="nextQuestion()">
-              Next
-            </button>
-          </mat-card-actions>
-          <mat-card-footer>
-            <!-- Result Section -->
-            <div *ngIf="result() !== null" class="result-card" @fadeInOut>
-              <mat-card-title [ngClass]="{ correct: result(), wrong: !result() }">
-                {{ result() ? 'Correct!' : 'Wrong!' }}
-              </mat-card-title>
-              <mat-card-actions>
-                
-              </mat-card-actions>
-            </div>
-          </mat-card-footer>
-        </mat-card>
-      </div>
-      <div class="timer-container">
-        <div class="timer-spinner">
-          <mat-progress-spinner
-            [value]="timerPercentage"
-            mode="determinate"
-            diameter="120"
-            strokeWidth="8"
-            color="accent"
-          ></mat-progress-spinner>
-          <div class="timer-text">{{ timerValue() }}s</div>
-        </div>
-        <h3>Score: {{ score() }}</h3>
-      </div>
- 
-    </div>
+  <span>U.S. States Quiz</span>
+  <div class="timer">Time Left: {{ timerMinutes }}:{{ timerSeconds | number: '2.0' }}</div>
+</mat-toolbar>
 
-   </div>
-  
-   
-  
-  
-  <!-- End Screen -->
-  <ng-template #endScreen>
-    <mat-card class="end-screen">
-      <mat-card-title>Quiz Complete!</mat-card-title>
-      <mat-card-content>
-        <p>Your final score is <strong>{{ score() }}</strong> out of {{ totalQuestions }}.</p>
-      </mat-card-content>
-      <mat-card-actions>
-        <button mat-raised-button color="primary" (click)="restartQuiz()">
-          Restart Quiz
-        </button>
-      </mat-card-actions>
-    </mat-card>
-  </ng-template>
-  
-  
-  
-  <!-- Footer Section -->
-  <footer class="score-footer">
-    
-  </footer>
-  
+<div class="quiz-container">
+  <mat-card *ngIf="currentQuestion">
+    <mat-card-title>
+      Question {{ currentIndex + 1 }} of {{ numQuestions }}: <br />
+      What is the capital of <strong>{{ currentQuestion.state }}</strong>?
+    </mat-card-title>
+    <mat-card-content>
+      <mat-radio-group [(ngModel)]="answers[currentIndex]">
+        <mat-radio-button *ngFor="let option of currentQuestion.options" [value]="option">
+          {{ option }}
+        </mat-radio-button>
+      </mat-radio-group>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-raised-button color="accent" (click)="previousQuestion()" [disabled]="currentIndex === 0">
+        Previous
+      </button>
+      <button mat-raised-button color="primary" (click)="nextQuestion()">
+        Next
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>
+
+<button mat-raised-button color="warn" (click)="submitQuiz()" *ngIf="timeLeft <= 0 || currentIndex === numQuestions - 1">
+  Submit Quiz
+</button>

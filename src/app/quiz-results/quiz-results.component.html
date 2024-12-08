@@ -1,0 +1,45 @@
+<mat-card class="results-card">
+    <mat-card-title>Quiz Results</mat-card-title>
+    <mat-card-content>
+      <p>Total Questions: {{ data.results.length }}</p>
+      <p>Correct Answers: {{ data.correctAnswers }}</p>
+      <p>Incorrect Answers: {{ data.incorrectAnswers  }}</p>
+      <p>Total Time Taken: {{ data.timeTaken}} seconds</p>
+
+      <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+
+        <!--- Note that these columns can be defined in any order.
+              The actual rendered columns are set as a property on the row definition" -->
+      
+              @for(col of columnConfig; track col.column){
+                <ng-container [matColumnDef]="col.column">
+                  <th mat-header-cell *matHeaderCellDef>{{col.display}}</th>
+                  <td mat-cell *matCellDef="let element"> 
+                    @if(col.column === 'isCorrect'){
+                      <span [style.color]="element[col.column] ? 'green' : 'red'">
+                        {{ element[col.column] ? '✔' : '✖'}}
+
+                      </span>
+                    } @else {
+                      {{element[col.column]}} 
+                    }
+                  </td>
+                </ng-container>
+              }
+        
+      
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <!-- <mat-list>
+        <mat-list-item *ngFor="let result of data.results">
+          
+          <span>{{ result.question }}</span>
+          <span *ngIf="result.isCorrect" class="correct">✔</span>
+          <span *ngIf="!result.isCorrect" class="incorrect">✖</span>
+        </mat-list-item>
+      </mat-list> -->
+    </mat-card-content>
+  </mat-card>
+  

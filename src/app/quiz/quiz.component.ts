@@ -1,163 +1,138 @@
-import { NgClass, NgFor, NgIf } from '@angular/common';
-import { Component, effect, inject, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
+import { Component, inject, Input, OnInit } from '@angular/core';
+import { STATES_AND_CAPITALS } from './quiz.model';
 import { MatCardModule } from '@angular/material/card';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatRadioModule } from '@angular/material/radio';
-import {MatSlideToggleModule} from '@angular/material/slide-toggle';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { interval, Subscription } from 'rxjs';
-import { QuizService } from './quiz.service';
-import { animate, style, transition, trigger } from '@angular/animations';
+import {MatRadioModule} from '@angular/material/radio';
+import { FormsModule } from '@angular/forms';
+import {MatToolbarModule} from '@angular/material/toolbar';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+
 
 @Component({
-  standalone: true,
   selector: 'app-quiz',
-  imports:[MatToolbarModule,
-    MatCardModule,
-    MatRadioModule,
-    MatButtonModule,
-    MatProgressBarModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule,
-    NgIf,
-    NgFor, // For structural directives like *ngIf and *ngFor
-    FormsModule,
-    NgClass,
-    MatSlideToggleModule
-    ],
+  imports: [MatCardModule, MatRadioModule, FormsModule, MatToolbarModule, CommonModule ],
   templateUrl: './quiz.component.html',
   styleUrls: ['./quiz.component.scss'],
-  animations: [
-    trigger('fadeInOut', [
-      transition(':enter', [
-        style({ opacity: 0 }),
-        animate('300ms ease-in', style({ opacity: 1 })),
-      ]),
-      transition(':leave', [
-        animate('300ms ease-out', style({ opacity: 0 })),
-      ]),
-    ]),
-  ],
 })
 export class QuizComponent implements OnInit {
+  router = inject(Router);
+  route = inject(ActivatedRoute);
 
-  quizService =  inject(QuizService);
-  private snackBar = inject(MatSnackBar);
+  numQuestions: number = 0;
+  totalTime: number = 0;
 
-  confirmQuestionClicked = signal(false);
-  nextQuestionClicked = signal(false);
-  question = this.quizService.question; // Signal for the current question
-  score = this.quizService.score; // Signal for the score
-  selectedOption = signal<string | null>(null); // Signal to track selected option
-  result = signal<boolean | null>(null); // Signal for the result of the current question
-  timerValue = signal(120); // Signal for the timer (in seconds)
-  progress = signal(0); // Signal for the progress bar percentage
-  timerSubscription: Subscription | null = null; // Subscription for the timer interval
+  questions = [...STATES_AND_CAPITALS];
+  selectedQuestions: any[] = [];
+  answers: (string | null)[] = []; // Track answers for each question
+  currentIndex: number = 0;
 
-  totalQuestions = 50; // Total number of questions in the quiz
-  isDarkMode = signal(false);
+  timeLeft: number = 0; // Total time left in seconds
+  timer: any;
+  startTime: number = 0;
 
-  toggleDarkMode(): void {
-    this.isDarkMode.update((value) => !value);
-    document.body.classList.toggle('dark-theme', this.isDarkMode());
+  get currentQuestion() {
+    return this.selectedQuestions[this.currentIndex];
   }
 
-  constructor() {
-    effect(() => {
-      this.quizService.generateQuestion(); // Generate the first question
-      // this.startTimer(); // Start the timer
-    });
+  get timerMinutes(): number {
+    return Math.floor(this.timeLeft / 60);
   }
+
+  get timerSeconds(): number {
+    return this.timeLeft % 60;
+  }
+
   ngOnInit(): void {
+    const state = history.state as { numQuestions: number; totalTime: number };
+
+    if (state && state.numQuestions && state.totalTime) {
+
+    
+      this.numQuestions = state.numQuestions;
+      this.totalTime = state.totalTime;
+      this.initializeQuiz();
+    } else {
+      this.router.navigate(['/config']); // Redirect to config if no state is provided
+    }
     this.startTimer();
   }
 
-  // Starts the countdown timer
+  initializeQuiz(): void {
+    this.startTime = Date.now(); // Record the start time
+    // Shuffle and pick the required number of unique questions
+    this.selectedQuestions = this.shuffleArray(this.questions)
+      .slice(0, this.numQuestions)
+      .map((question) => {
+        // Generate options: Include the correct answer and random incorrect answers
+        const incorrectOptions = this.questions
+          .filter((q) => q.capital !== question.capital) // Exclude the correct answer
+          .map((q) => q.capital); // Get only the incorrect capitals
+  
+        const randomIncorrects = this.shuffleArray(incorrectOptions).slice(0, 3); // Pick 3 random incorrect options
+  
+        return {
+          ...question,
+          options: this.shuffleArray([question.capital, ...randomIncorrects]), // Shuffle correct and incorrect answers
+        };
+      });
+  
+    // Initialize answers array
+    this.answers = Array(this.numQuestions).fill(null);
+  
+    // Calculate total time in seconds
+    this.timeLeft = this.totalTime * 60;
+  }
+  
+
   startTimer(): void {
-    this.timerValue.set(120); // Reset the timer to 10 seconds
-    this.timerSubscription = interval(1000).subscribe(() => {
-      const currentValue = this.timerValue();
-      if (currentValue > 0) {
-        this.timerValue.set(currentValue - 1); // Decrement the timer
-      } else {
-        this.timerSubscription?.unsubscribe();
-        this.autoProceed(); // Auto-proceed if time runs out
+    this.timer = setInterval(() => {
+      this.timeLeft--;
+      if (this.timeLeft <= 0) {
+        clearInterval(this.timer);
+        this.submitQuiz();
       }
-    });
+    }, 1000);
   }
 
-  // Automatically proceed to the next question if time runs out
-  autoProceed(): void {
-    this.result.set(false); // Mark the result as incorrect
-    this.snackBar.open('Time is up! ❌', 'Close', { duration: 3000 });
-    this.nextQuestion();
+  shuffleArray(array: any[]): any[] {
+    return array.sort(() => Math.random() - 0.5);
   }
 
-  // Getter for timer percentage
-  get timerPercentage(): number {
-    return (this.timerValue() / 120) * 100; // Calculate percentage based on the initial timer value
-  }
-  // Handles when the user confirms their answer
-  confirmAnswer(): void {
-    this.confirmQuestionClicked.set(true);
-    if (this.selectedOption()) {
-      // this.timerSubscription?.unsubscribe(); // Stop the timer
-      const isCorrect = this.quizService.checkAnswer(this.selectedOption()!); // Check the answer
-      this.result.set(isCorrect); // Update the result signal
-
-      // Display feedback via snack bar
-      this.snackBar.open(
-        isCorrect ? 'Correct! 🎉' : 'Wrong! ❌',
-        'Close',
-        {
-          duration: 3000,
-          panelClass: isCorrect ? 'snack-correct' : 'snack-wrong',
-          horizontalPosition: 'end', // Position snack bar at the end (right)
-          verticalPosition: 'top', // Position snack bar at the top
-        }
-      );
-
-      this.updateProgress(); // Update the progress bar
+  previousQuestion(): void {
+    if (this.currentIndex > 0) {
+      this.currentIndex--;
     }
   }
 
-  // Moves to the next question
   nextQuestion(): void {
-    this.confirmQuestionClicked.set(false);
-    if (this.quizService.currentQuestionIndex() + 1 < this.totalQuestions) {
-      this.result.set(null); // Reset the result
-      this.selectedOption.set(null); // Reset the selected option
-      this.quizService.incrementQuestionIndex(); // Increment the question index
-      this.quizService.generateQuestion(); // Generate the next question
-      // this.startTimer(); // Restart the timer
-    } else {
-      this.endQuiz(); // End the quiz if all questions are answered
+    if (this.currentIndex < this.numQuestions - 1) {
+      this.currentIndex++;
     }
   }
 
-  // Updates the progress bar percentage
-  updateProgress(): void {
-    const answeredQuestions = this.quizService.currentQuestionIndex() + 1;
-    this.progress.set((answeredQuestions / this.totalQuestions) * 100);
+  submitQuiz(): void {
+    clearInterval(this.timer);
+    this.calculateResults();
   }
 
-  // Ends the quiz
-  endQuiz(): void {
-    this.snackBar.open('Quiz Complete! 🎉', 'Close', { duration: 3000 });
-    // Optionally, navigate to a summary or results page here
-  }
+  calculateResults(): void {
+    const endTime = Date.now();
+    const timeTaken = Math.floor((endTime - this.startTime) / 1000); // Time in seconds
 
-  // Restarts the quiz from the beginning
-  restartQuiz(): void {
-    this.result.set(null);
-    this.selectedOption.set(null);
-    this.quizService.resetQuiz(); // Use the resetQuiz method to reset signals
-    this.quizService.generateQuestion(); // Generate the first question
-    this.startTimer(); // Start the timer
-    this.updateProgress(); // Reset the progress bar
+    const results = this.selectedQuestions.map((question, index) => ({
+      question: question.state,
+      correct: question.capital,
+      selected: this.answers[index],
+      isCorrect: this.answers[index] === question.capital,
+    }));
+
+    const score = results.filter((result) => result.isCorrect).length;
+    const correctAnswers = results.filter(result => result.isCorrect).length;
+    const incorrectAnswers = results.filter(result => !result.isCorrect).length;
+
+    this.router.navigate(['/results'], {
+      state: { results: {results, correctAnswers, incorrectAnswers, score, timeTaken, totalTime: this.totalTime} },
+    });
+    console.log('Results:', results); // Pass results to the results screen or process them
   }
 }
