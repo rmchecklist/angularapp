@@ -12,6 +12,11 @@ export const routes: Routes = [
       import('./quiz-config/quiz-config.component').then((m) => m.QuizConfigComponent),
   },
   {
+    path: 'quiz-demo',
+    loadComponent: () =>
+      import('./quiz-demo/quiz-demo.component').then((m) => m.QuizDemoComponent),
+  },
+  {
     path: 'quiz',
     loadComponent: () =>
       import('./quiz/quiz.component').then((m) => m.QuizComponent),

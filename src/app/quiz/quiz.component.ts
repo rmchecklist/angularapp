@@ -18,7 +18,7 @@ import { MatButtonModule } from '@angular/material/button';
 export class QuizComponent implements OnInit {
   router = inject(Router);
   route = inject(ActivatedRoute);
-
+  
   disabledInputSelection = signal(false);
   numQuestions: number = 0;
   totalTime: number = 0;
@@ -50,7 +50,7 @@ export class QuizComponent implements OnInit {
 
     if (state && state.numQuestions && state.totalTime) {
 
-    
+
       this.numQuestions = state.numQuestions;
       this.totalTime = state.totalTime;
       this.initializeQuiz();
@@ -70,22 +70,22 @@ export class QuizComponent implements OnInit {
         const incorrectOptions = this.questions
           .filter((q) => q.capital !== question.capital) // Exclude the correct answer
           .map((q) => q.capital); // Get only the incorrect capitals
-  
+
         const randomIncorrects = this.shuffleArray(incorrectOptions).slice(0, 3); // Pick 3 random incorrect options
-  
+
         return {
           ...question,
           options: this.shuffleArray([question.capital, ...randomIncorrects]), // Shuffle correct and incorrect answers
         };
       });
-  
+
     // Initialize answers array
     this.answers = Array(this.numQuestions).fill(null);
-  
+
     // Calculate total time in seconds
     this.timeLeft = this.totalTime * 60;
   }
-  
+
 
   startTimer(): void {
     this.timer = setInterval(() => {

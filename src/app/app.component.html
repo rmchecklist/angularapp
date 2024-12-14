@@ -1,1 +1,26 @@
+<mat-toolbar>
+  <div>
+    @for(item of menu; track $index){ @for(key of getKeys(item); track key){
+    <button
+      mat-button
+      [matMenuTriggerFor]="appMenu"
+      [matMenuTriggerData]="{ lists: getValues(item) }"
+    >
+      {{ key }}
+    </button>
+
+    <mat-menu #appMenu="matMenu">
+      <ng-template matMenuContent let-lists="lists">
+        @for(list of lists; track $index){
+        <button mat-menu-item [routerLink]="list.routeUrl">
+          {{ list.name }}
+        </button>
+        }
+      </ng-template>
+    </mat-menu>
+
+    } }
+  </div>
+  <span class="example-spacer"></span>
+</mat-toolbar>
 <router-outlet></router-outlet>

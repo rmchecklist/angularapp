@@ -2,7 +2,7 @@
   <span>U.S. States Quiz</span>
   <span class="example-spacer"></span>
   <div class="timer">
-    Time Left: {{ timerMinutes }}:{{ timerSeconds | number : "2.0" }}
+    <!-- Time Left: {{ timerMinutes }}:{{ timerSeconds | number : "2.0" }} -->
   </div>
 </mat-toolbar>
 
@@ -54,7 +54,7 @@
   mat-raised-button
   color="warn"
   (click)="submitQuiz()"
-  *ngIf="timeLeft <= 0 || currentIndex === numQuestions - 1"
+  
 >
   Submit Quiz
 </button>

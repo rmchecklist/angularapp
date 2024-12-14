@@ -24,8 +24,8 @@ export class QuizConfigComponent {
   }
 
   startQuiz(): void {
-     // Navigate to the quiz page with state data
-     this.router.navigate(['/quiz'], {
+    //  Navigate to the quiz page with state data
+     this.router.navigate(['/quiz-demo'], {
       state: { numQuestions: this.numQuestions, totalTime: this.totalTime },
     });
   }
